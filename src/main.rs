@@ -49,7 +49,7 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
     let prefix = " ".chars().cycle().take(depth * 4).collect::<String>();
     let playback_info = session.GetPlaybackInfo()?;
 
-    if let Ok(auto_repeat_mode) = playback_info.AutoRepeatMode()?.Value() {
+    if let Ok(auto_repeat_mode) = playback_info.AutoRepeatMode().and_then(|v| v.Value()) {
         println!("{prefix}auto_repeat_mode: {auto_repeat_mode:?}");
     }
 
@@ -58,7 +58,7 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
         print_playback_controls(controls, depth + 1)?;
     }
 
-    if let Ok(is_shuffle_active) = playback_info.IsShuffleActive()?.Value() {
+    if let Ok(is_shuffle_active) = playback_info.IsShuffleActive().and_then(|v| v.Value()) {
         println!("{prefix}is_shuffle_active: {is_shuffle_active}");
     }
 
@@ -70,7 +70,7 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
         println!("{prefix}playback_status: {playback_status:?}");
     }
 
-    if let Ok(playback_type) = playback_info.PlaybackType()?.Value() {
+    if let Ok(playback_type) = playback_info.PlaybackType().and_then(|v| v.Value()) {
         println!("{prefix}playback_type: {playback_type:?}");
     }
 
