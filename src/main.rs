@@ -14,15 +14,13 @@ async fn main() -> Result<()> {
     println!();
 
     println!("media_properties:");
-    let _ = print_media_properties(&current_session, 1)
-        .await
-        .map_err(|err| println!("{err}"));
+    let _ = print_media_properties(&current_session, 1).await;
 
     println!("playback_info:");
-    let _ = print_playback_info(&current_session, 1).map_err(|err| println!("{err}"));
+    let _ = print_playback_info(&current_session, 1);
 
     println!("timeline_properties:");
-    let _ = print_timeline_properties(&current_session, 1).map_err(|err| println!("{err}"));
+    let _ = print_timeline_properties(&current_session, 1);
 
     Ok(())
 }
@@ -51,25 +49,30 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
     let prefix = " ".chars().cycle().take(depth * 4).collect::<String>();
     let playback_info = session.GetPlaybackInfo()?;
 
-    let auto_repeat_mode = playback_info.AutoRepeatMode()?.Value()?;
-    println!("{prefix}auto_repeat_mode: {auto_repeat_mode:?}");
+    if let Ok(auto_repeat_mode) = playback_info.AutoRepeatMode()?.Value() {
+        println!("{prefix}auto_repeat_mode: {auto_repeat_mode:?}");
+    }
 
-    let controls = playback_info.Controls()?;
-    println!("{prefix}controls:");
-    print_playback_controls(controls, depth + 1)?;
+    if let Ok(controls) = playback_info.Controls() {
+        println!("{prefix}controls:");
+        print_playback_controls(controls, depth + 1)?;
+    }
 
-    let is_shuffle_active = playback_info.IsShuffleActive()?.Value()?;
-    println!("{prefix}is_shuffle_active: {is_shuffle_active}");
+    if let Ok(is_shuffle_active) = playback_info.IsShuffleActive()?.Value() {
+        println!("{prefix}is_shuffle_active: {is_shuffle_active}");
+    }
 
     if let Ok(playback_rate) = playback_info.PlaybackRate().and_then(|info| info.Value()) {
         println!("{prefix}playback_rate: {playback_rate}x");
     }
 
-    let playback_status = playback_info.PlaybackStatus()?;
-    println!("{prefix}playback_status: {playback_status:?}");
+    if let Ok(playback_status) = playback_info.PlaybackStatus() {
+        println!("{prefix}playback_status: {playback_status:?}");
+    }
 
-    let playback_type = playback_info.PlaybackType()?.Value()?;
-    println!("{prefix}playback_type: {playback_type:?}");
+    if let Ok(playback_type) = playback_info.PlaybackType()?.Value() {
+        println!("{prefix}playback_type: {playback_type:?}");
+    }
 
     Ok(())
 }
