@@ -16,11 +16,12 @@ async fn main() -> Result<()> {
     println!("media_properties:");
     let _ = print_media_properties(&current_session, 1).await;
 
-    println!("playback_info:");
-    let _ = print_playback_info(&current_session, 1);
+    println!("    playback_info:");
+    let _ = print_playback_info(&current_session, 2);
+    println!();
 
-    println!("timeline_properties:");
-    let _ = print_timeline_properties(&current_session, 1);
+    println!("    timeline_properties:");
+    let _ = print_timeline_properties(&current_session, 2);
 
     Ok(())
 }
@@ -67,11 +68,11 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
     }
 
     if let Ok(playback_status) = playback_info.PlaybackStatus() {
-        println!("{prefix}playback_status: {playback_status:?}");
+        println!("{prefix}playback_status: {}", playback_status.0);
     }
 
     if let Ok(playback_type) = playback_info.PlaybackType().and_then(|v| v.Value()) {
-        println!("{prefix}playback_type: {playback_type:?}");
+        println!("{prefix}playback_type: {}", playback_type.0);
     }
 
     Ok(())
@@ -123,7 +124,7 @@ async fn print_media_properties(session: &GSMTCSession, depth: usize) -> Result<
     let album_track_count = media_properties.AlbumTrackCount()?;
     let artist = media_properties.Artist()?;
     let genres = media_properties.Genres()?;
-    let playback_type = media_properties.PlaybackType()?.Value()?;
+    let playback_type = media_properties.PlaybackType()?.Value()?.0;
     let subtitle = media_properties.Subtitle()?;
     let thumbnail = media_properties.Thumbnail()?.OpenReadAsync()?.await?;
     let title = media_properties.Title()?;
@@ -137,7 +138,7 @@ async fn print_media_properties(session: &GSMTCSession, depth: usize) -> Result<
     for genre in genres {
         println!("{prefix}     - {genre}, ");
     }
-    println!("{prefix}playback_type: {playback_type:?}");
+    println!("{prefix}playback_type: {playback_type}");
     println!("{prefix}subtitle: {subtitle}");
     println!("{prefix}thumbnail:");
     println!("{prefix}    content_type: {}", thumbnail.ContentType()?);
