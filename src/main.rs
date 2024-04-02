@@ -9,7 +9,7 @@ async fn main() -> Result<()> {
     let current_session = session_manager.GetCurrentSession()?;
 
     let app_user_model_id = current_session.SourceAppUserModelId()?;
-    println!("app_user_model_id: {app_user_model_id}");
+    println!("app_user_model_id: \"{app_user_model_id}\"");
 
     println!();
 
@@ -30,19 +30,19 @@ fn print_timeline_properties(session: &GSMTCSession, depth: usize) -> Result<()>
     let prefix = " ".chars().cycle().take(depth * 4).collect::<String>();
     let timeline_properties = session.GetTimelineProperties()?;
 
-    let start_time = timeline_properties.StartTime()?;
-    let end_time = timeline_properties.EndTime()?;
-    let max_seek_time = timeline_properties.MaxSeekTime()?;
-    let min_seek_time = timeline_properties.MinSeekTime()?;
-    let position = timeline_properties.Position()?;
-    let last_updated_time = timeline_properties.LastUpdatedTime()?;
+    let start_time = timeline_properties.StartTime()?.Duration;
+    let end_time = timeline_properties.EndTime()?.Duration;
+    let max_seek_time = timeline_properties.MaxSeekTime()?.Duration;
+    let min_seek_time = timeline_properties.MinSeekTime()?.Duration;
+    let position = timeline_properties.Position()?.Duration;
+    let last_updated_time = timeline_properties.LastUpdatedTime()?.UniversalTime;
 
-    println!("{prefix}start_time: {start_time:?}");
-    println!("{prefix}end_time: {end_time:?}");
-    println!("{prefix}max_seek_time: {max_seek_time:?}");
-    println!("{prefix}min_seek_time: {min_seek_time:?}");
-    println!("{prefix}position: {position:?}");
-    println!("{prefix}last_updated_time: {last_updated_time:?}");
+    println!("{prefix}start_time: {start_time}");
+    println!("{prefix}end_time: {end_time}");
+    println!("{prefix}max_seek_time: {max_seek_time}");
+    println!("{prefix}min_seek_time: {min_seek_time}");
+    println!("{prefix}position: {position}");
+    println!("{prefix}last_updated_time: {last_updated_time}");
     Ok(())
 }
 
@@ -51,7 +51,7 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
     let playback_info = session.GetPlaybackInfo()?;
 
     if let Ok(auto_repeat_mode) = playback_info.AutoRepeatMode().and_then(|v| v.Value()) {
-        println!("{prefix}auto_repeat_mode: {auto_repeat_mode:?}");
+        println!("{prefix}auto_repeat_mode: {}", auto_repeat_mode.0);
     }
 
     if let Ok(controls) = playback_info.Controls() {
@@ -64,7 +64,7 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
     }
 
     if let Ok(playback_rate) = playback_info.PlaybackRate().and_then(|info| info.Value()) {
-        println!("{prefix}playback_rate: {playback_rate}x");
+        println!("{prefix}playback_rate: {playback_rate:.02}");
     }
 
     if let Ok(playback_status) = playback_info.PlaybackStatus() {
