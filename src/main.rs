@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use anyhow::Result;
+use windows::Foundation::DateTime;
 use windows::Media::Control::GlobalSystemMediaTransportControlsSession as GSMTCSession;
 use windows::Media::Control::GlobalSystemMediaTransportControlsSessionManager as GSMTCSessionManager;
 use windows::Media::Control::GlobalSystemMediaTransportControlsSessionPlaybackControls as GSMTCPlaybackControls;
@@ -30,19 +33,22 @@ fn print_timeline_properties(session: &GSMTCSession, depth: usize) -> Result<()>
     let prefix = " ".chars().cycle().take(depth * 4).collect::<String>();
     let timeline_properties = session.GetTimelineProperties()?;
 
-    let start_time = timeline_properties.StartTime()?.Duration;
-    let end_time = timeline_properties.EndTime()?.Duration;
-    let max_seek_time = timeline_properties.MaxSeekTime()?.Duration;
-    let min_seek_time = timeline_properties.MinSeekTime()?.Duration;
-    let position = timeline_properties.Position()?.Duration;
-    let last_updated_time = timeline_properties.LastUpdatedTime()?.UniversalTime;
+    let start_time: Duration = timeline_properties.StartTime()?.into();
+    let end_time: Duration = timeline_properties.EndTime()?.into();
+    let max_seek_time: Duration = timeline_properties.MaxSeekTime()?.into();
+    let min_seek_time: Duration = timeline_properties.MinSeekTime()?.into();
+    let position: Duration = timeline_properties.Position()?.into();
+    let last_updated_time: DateTime = timeline_properties.LastUpdatedTime()?.into();
 
-    println!("{prefix}start_time: {start_time}");
-    println!("{prefix}end_time: {end_time}");
-    println!("{prefix}max_seek_time: {max_seek_time}");
-    println!("{prefix}min_seek_time: {min_seek_time}");
-    println!("{prefix}position: {position}");
-    println!("{prefix}last_updated_time: {last_updated_time}");
+    println!("{prefix}start_time: {}", start_time.as_nanos());
+    println!("{prefix}end_time: {}", end_time.as_nanos());
+    println!("{prefix}max_seek_time: {}", max_seek_time.as_nanos());
+    println!("{prefix}min_seek_time: {}", min_seek_time.as_nanos());
+    println!("{prefix}position: {}", position.as_nanos());
+    println!(
+        "{prefix}last_updated_time: {}",
+        last_updated_time.UniversalTime
+    );
     Ok(())
 }
 
@@ -51,7 +57,15 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
     let playback_info = session.GetPlaybackInfo()?;
 
     if let Ok(auto_repeat_mode) = playback_info.AutoRepeatMode().and_then(|v| v.Value()) {
-        println!("{prefix}auto_repeat_mode: {}", auto_repeat_mode.0);
+        println!(
+            "{prefix}auto_repeat_mode: \"{}\"",
+            match auto_repeat_mode.0 {
+                0 => "None",
+                1 => "Track",
+                2 => "List",
+                _ => unreachable!(),
+            }
+        );
     }
 
     if let Ok(controls) = playback_info.Controls() {
@@ -68,11 +82,31 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
     }
 
     if let Ok(playback_status) = playback_info.PlaybackStatus() {
-        println!("{prefix}playback_status: {}", playback_status.0);
+        println!(
+            "{prefix}playback_status: \"{}\"",
+            match playback_status.0 {
+                0 => "Closed",
+                1 => "Opened",
+                2 => "Changing",
+                3 => "Stopped",
+                4 => "Playing",
+                5 => "Paused",
+                _ => unreachable!(),
+            }
+        );
     }
 
     if let Ok(playback_type) = playback_info.PlaybackType().and_then(|v| v.Value()) {
-        println!("{prefix}playback_type: {}", playback_type.0);
+        println!(
+            "{prefix}playback_type: \"{}\"",
+            match playback_type.0 {
+                0 => "Unknown",
+                1 => "Music",
+                2 => "Video",
+                3 => "Image",
+                _ => unreachable!(),
+            }
+        );
     }
 
     Ok(())
