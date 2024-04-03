@@ -99,13 +99,7 @@ fn print_playback_info(session: &GSMTCSession, depth: usize) -> Result<()> {
     if let Ok(playback_type) = playback_info.PlaybackType().and_then(|v| v.Value()) {
         println!(
             "{prefix}playback_type: \"{}\"",
-            match playback_type.0 {
-                0 => "Unknown",
-                1 => "Music",
-                2 => "Video",
-                3 => "Image",
-                _ => unreachable!(),
-            }
+            playback_type_str(playback_type.0)
         );
     }
 
@@ -164,15 +158,18 @@ async fn print_media_properties(session: &GSMTCSession, depth: usize) -> Result<
     let title = media_properties.Title()?;
     let track_number = media_properties.TrackNumber()?;
 
-    println!("{prefix}album_artist: {album_artist}");
-    println!("{prefix}album_title: {album_title}");
+    println!("{prefix}album_artist: \"{album_artist}\"");
+    println!("{prefix}album_title: \"{album_title}\"");
     println!("{prefix}album_track_count: {album_track_count}");
-    println!("{prefix}artist: {artist}");
+    println!("{prefix}artist: \"{artist}\"");
     println!("{prefix}genres:");
     for genre in genres {
-        println!("{prefix}     - {genre}, ");
+        println!("{prefix}     - \"{genre}\"");
     }
-    println!("{prefix}playback_type: {playback_type}");
+    println!(
+        "{prefix}playback_type: {}",
+        playback_type_str(playback_type)
+    );
     println!("{prefix}subtitle: {subtitle}");
     println!("{prefix}thumbnail:");
     println!("{prefix}    content_type: {}", thumbnail.ContentType()?);
@@ -181,4 +178,14 @@ async fn print_media_properties(session: &GSMTCSession, depth: usize) -> Result<
     println!("{prefix}track_number: {track_number}");
 
     Ok(())
+}
+
+fn playback_type_str(t: i32) -> &'static str {
+    match t {
+        0 => "Unknown",
+        1 => "Music",
+        2 => "Video",
+        3 => "Image",
+        _ => unreachable!(),
+    }
 }
